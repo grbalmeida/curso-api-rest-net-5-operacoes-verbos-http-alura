@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FilmesAPI.Controllers
 {
@@ -9,7 +10,7 @@ namespace FilmesAPI.Controllers
     [Route("[controller]")]
     public class FilmeController : ControllerBase
     {
-        private static List<Filme> filmes = new List<Filme>();
+        private static readonly List<Filme> filmes = new();
         private static int id = 1;
 
         [HttpPost]
@@ -23,6 +24,12 @@ namespace FilmesAPI.Controllers
         public IEnumerable<Filme> RecuperarFilmes()
         {
             return filmes;
+        }
+
+        [HttpGet("{id}")]
+        public Filme RecuperaFilmePorId(int id)
+        {
+            return filmes.FirstOrDefault(filme => filme.Id == id);
         }
     }
 }
