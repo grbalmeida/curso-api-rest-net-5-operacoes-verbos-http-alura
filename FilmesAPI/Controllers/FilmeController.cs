@@ -1,8 +1,8 @@
-﻿using FilmesAPI.Models;
+﻿using FilmesAPI.Data;
+using FilmesAPI.Models;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace FilmesAPI.Controllers
 {
@@ -10,28 +10,32 @@ namespace FilmesAPI.Controllers
     [Route("[controller]")]
     public class FilmeController : ControllerBase
     {
-        private static readonly List<Filme> filmes = new();
-        private static int id = 1;
+        private readonly FilmeContext _context;
+
+        public FilmeController(FilmeContext context)
+        {
+            _context = context;
+        }
 
         [HttpPost]
-        public IActionResult AdicionaFilme([FromBody] Filme filme)
+        public async Task<IActionResult> AdicionaFilme([FromBody] Filme filme)
         {
-            filme.Id = id++;
-            filmes.Add(filme);
+            _context.Filmes.Add(filme);
+            await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(RecuperaFilmePorId), new { id = filme.Id }, filme);
         }
 
         [HttpGet]
-        public IActionResult RecuperarFilmes()
+        public async Task<IActionResult> RecuperarFilmes()
         {
-            return Ok(filmes);
+            return Ok(await _context.Filmes.ToListAsync());
         }
 
         [HttpGet("{id}")]
-        public IActionResult RecuperaFilmePorId(int id)
+        public async Task<IActionResult> RecuperaFilmePorId(int id)
         {
-            var filme = filmes.FirstOrDefault(filme => filme.Id == id);
-        
+            var filme = await _context.Filmes.FirstOrDefaultAsync(filme => filme.Id == id);
+
             if (filme != null)
             {
                 return Ok(filme);
