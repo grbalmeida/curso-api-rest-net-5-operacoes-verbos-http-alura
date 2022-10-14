@@ -1,7 +1,9 @@
 ﻿using FilmesAPI.Data;
+using FilmesAPI.Data.Dtos;
 using FilmesAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Threading.Tasks;
 
 namespace FilmesAPI.Controllers
@@ -18,8 +20,16 @@ namespace FilmesAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AdicionaFilme([FromBody] Filme filme)
+        public async Task<IActionResult> AdicionaFilme([FromBody] CreateFilmeDto filmeDto)
         {
+            var filme = new Filme
+            {
+                Diretor = filmeDto.Diretor,
+                Duracao = filmeDto.Duracao,
+                Genero = filmeDto.Genero,
+                Titulo = filmeDto.Titulo
+            };
+
             _context.Filmes.Add(filme);
             await _context.SaveChangesAsync();
             return CreatedAtAction(nameof(RecuperaFilmePorId), new { id = filme.Id }, filme);
@@ -38,14 +48,24 @@ namespace FilmesAPI.Controllers
 
             if (filme != null)
             {
-                return Ok(filme);
+                var filmeDto = new ReadFilmeDto
+                {
+                    Id = filme.Id,
+                    Titulo = filme.Titulo,
+                    Diretor = filme.Diretor,
+                    Duracao = filme.Duracao,
+                    Genero = filme.Genero,
+                    HoraDaConsulta = DateTime.Now
+                };
+
+                return Ok(filmeDto);
             }
 
             return NotFound();
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> AtualizaFilme(int id, [FromBody] Filme filmeNovo)
+        public async Task<IActionResult> AtualizaFilme(int id, [FromBody] UpdateFilmeDto filmeDto)
         {
             var filme = await _context.Filmes.FirstOrDefaultAsync(filme => filme.Id == id);
 
@@ -54,10 +74,10 @@ namespace FilmesAPI.Controllers
                 return NotFound();
             }
 
-            filme.Titulo = filmeNovo.Titulo;
-            filme.Diretor = filmeNovo.Diretor;
-            filme.Genero = filmeNovo.Genero;
-            filme.Duracao = filmeNovo.Duracao;
+            filme.Titulo = filmeDto.Titulo;
+            filme.Diretor = filmeDto.Diretor;
+            filme.Genero = filmeDto.Genero;
+            filme.Duracao = filmeDto.Duracao;
 
             _context.Filmes.Update(filme);
             await _context.SaveChangesAsync();
